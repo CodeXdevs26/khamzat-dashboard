@@ -1,0 +1,93 @@
+"use client";
+
+import { AAlertDialog } from "@/components/modal/AAlertDialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Edit3, MoreHorizontal, Trash2 } from "lucide-react";
+
+export interface LessonItem {
+  id: string;
+  lessonType: string;
+  chapterId: string;
+  index: number;
+  chapter?: {
+    id: string;
+    name: string;
+    index: number;
+    levelId: string;
+  };
+}
+
+interface LessonCardProps {
+  lesson: LessonItem;
+  onEdit: (lesson: LessonItem) => void;
+  onDelete: (lesson: LessonItem) => void;
+}
+
+const LessonCard = ({ lesson, onEdit, onDelete }: LessonCardProps) => {
+  return (
+    <div className="space-y-3">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-background p-5">
+        <div className="absolute top-4 right-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9 rounded-full text-white hover:bg-white/8 hover:text-white"
+              >
+                <MoreHorizontal className="size-5" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              align="end"
+              className="w-40 border-border bg-card text-white"
+            >
+              <DropdownMenuItem
+                onClick={() => onEdit(lesson)}
+                className="cursor-pointer"
+              >
+                <Edit3 className="size-4" />
+                Edit
+              </DropdownMenuItem>
+
+              <AAlertDialog
+                title="Delete lesson?"
+                description={`This will permanently remove ${lesson.lessonType} lesson ${lesson.index}. This action cannot be undone.`}
+                cancelText="Keep lesson"
+                actionText="Delete"
+                onAction={() => onDelete(lesson)}
+              >
+                <DropdownMenuItem
+                  variant="destructive"
+                  className="cursor-pointer"
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </DropdownMenuItem>
+              </AAlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="rounded-[18px] bg-black/20 p-5 pr-14">
+          <h3 className="text-[24px] leading-none font-semibold text-white">
+            {lesson.chapter?.name || `Lesson ${lesson.index}`}
+          </h3>
+          <p className="mt-3 text-sm text-muted-foreground">
+            {lesson.lessonType} | Index {lesson.index}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LessonCard;
