@@ -32,6 +32,7 @@ export interface QuestionFormValues {
   hint?: string;
   fullSentence?: string;
   missingWord?: string;
+  audio?: File;
 }
 
 interface QuestionFormModalProps {
@@ -71,6 +72,7 @@ const emptyValues: QuestionFormValues = {
   hint: "",
   fullSentence: "",
   missingWord: "",
+  audio: undefined,
 };
 
 const QuestionFormModal = ({
@@ -455,6 +457,19 @@ const QuestionFormModal = ({
               </div>
             </>
           ) : null}
+
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-white">Audio</label>
+            <Input
+              key={open ? "open" : "closed"}
+              type="file"
+              accept="audio/*"
+              onChange={(event) =>
+                handleFieldChange("audio", event.target.files?.[0])
+              }
+              className="h-12 rounded-2xl border-border bg-transparent px-5 text-white"
+            />
+          </div>
 
           <Button
             type="button"

@@ -187,39 +187,45 @@ const QuestionsContainer = () => {
     });
   }, [questions, searchTerm, selectedChapter, selectedLesson]);
 
-  const handleCreateQuestion = async (values: QuestionFormValues) => {
-    const payload = {
-      chapterId: values.chapterId,
-      lessonId: values.lessonId,
-      index: values.index,
-      sentenceInEnglish: values.sentenceInEnglish,
-      sentenceInLearningLanguage: values.sentenceInLearningLanguage,
-      hint: values.hint,
-      fullSentence: values.fullSentence,
-      missingWord: values.missingWord,
-    };
+  const buildQuestionFormData = (values: QuestionFormValues) => {
+    const formData = new FormData();
+    formData.append(
+      "payload",
+      JSON.stringify({
+        chapterId: values.chapterId,
+        lessonId: values.lessonId,
+        index: values.index,
+        sentenceInEnglish: values.sentenceInEnglish,
+        sentenceInLearningLanguage: values.sentenceInLearningLanguage,
+        hint: values.hint,
+        fullSentence: values.fullSentence,
+        missingWord: values.missingWord,
+      }),
+    );
 
-    await handleMutation(payload, createQuestion, "Creating question...", () => {
-      setIsCreateOpen(false);
-    });
+    if (values.audio) {
+      formData.append("audio", values.audio);
+    }
+
+    return formData;
+  };
+
+  const handleCreateQuestion = async (values: QuestionFormValues) => {
+    await handleMutation(
+      buildQuestionFormData(values),
+      createQuestion,
+      "Creating question...",
+      () => {
+        setIsCreateOpen(false);
+      },
+    );
   };
 
   const handleEditQuestion = async (values: QuestionFormValues) => {
     if (!editingQuestion) return;
 
-    const payload = {
-      chapterId: values.chapterId,
-      lessonId: values.lessonId,
-      index: values.index,
-      sentenceInEnglish: values.sentenceInEnglish,
-      sentenceInLearningLanguage: values.sentenceInLearningLanguage,
-      hint: values.hint,
-      fullSentence: values.fullSentence,
-      missingWord: values.missingWord,
-    };
-
     await handleMutation(
-      { id: editingQuestion.id, data: payload },
+      { id: editingQuestion.id, data: buildQuestionFormData(values) },
       updateQuestion,
       "Updating question...",
       () => {
@@ -372,6 +378,7 @@ const QuestionsContainer = () => {
           hint: "",
           fullSentence: "",
           missingWord: "",
+          audio: undefined,
         }}
         title="Add New Question"
         description="Create a sentence or dialogue question"
