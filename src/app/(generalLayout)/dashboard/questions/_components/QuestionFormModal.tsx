@@ -33,6 +33,7 @@ export interface QuestionFormValues {
   fullSentence?: string;
   missingWord?: string;
   audio?: File;
+  audioUrl?: string | null;
 }
 
 interface QuestionFormModalProps {
@@ -86,6 +87,7 @@ const QuestionFormModal = ({
   levelOptions,
 }: QuestionFormModalProps) => {
   const [values, setValues] = useState<QuestionFormValues>(emptyValues);
+  const [selectedAudioUrl, setSelectedAudioUrl] = useState<string>();
   const { data: chaptersData } = useGetChaptersQuery(values.levelId);
   const chapters = useMemo<ChapterApiItem[]>(
     () => chaptersData?.data || [],
@@ -121,6 +123,18 @@ const QuestionFormModal = ({
       setValues(defaultValues ?? emptyValues);
     }
   }, [defaultValues, open]);
+
+  useEffect(() => {
+    if (!values.audio) {
+      setSelectedAudioUrl(undefined);
+      return;
+    }
+
+    const audioUrl = URL.createObjectURL(values.audio);
+    setSelectedAudioUrl(audioUrl);
+
+    return () => URL.revokeObjectURL(audioUrl);
+  }, [values.audio]);
 
   useEffect(() => {
     if (!values.levelId && levelOptions.length) {
@@ -469,6 +483,15 @@ const QuestionFormModal = ({
               }
               className="h-12 rounded-2xl border-border bg-transparent px-5 text-white"
             />
+            {selectedAudioUrl || values.audioUrl ? (
+              <audio
+                className="w-full"
+                controls
+                preload="none"
+                src={selectedAudioUrl || values.audioUrl || undefined}
+                aria-label="Question audio"
+              />
+            ) : null}
           </div>
 
           <Button

@@ -409,6 +409,7 @@ const QuestionsContainer = () => {
                 hint: editingQuestion.hint || "",
                 fullSentence: editingQuestion.fullSentence || "",
                 missingWord: editingQuestion.missingWord || "",
+                audioUrl: editingQuestion.audio,
               }
             : undefined
         }

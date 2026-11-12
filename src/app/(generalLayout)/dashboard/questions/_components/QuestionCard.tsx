@@ -19,6 +19,7 @@ export interface QuestionItem {
   hint: string | null;
   fullSentence: string | null;
   missingWord: string | null;
+  audio?: string | null;
   index: number;
   type: string;
   createdAt: string;
@@ -111,6 +112,16 @@ const QuestionCard = ({ question, onEdit, onDelete }: QuestionCardProps) => {
           Index: <span className="text-white">{question.index}</span>
         </p>
       </div>
+
+      {question.audio ? (
+        <audio
+          className="mt-4 w-full"
+          controls
+          preload="none"
+          src={question.audio}
+          aria-label="Question audio"
+        />
+      ) : null}
     </div>
   );
 };
