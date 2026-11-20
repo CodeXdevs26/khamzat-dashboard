@@ -30,7 +30,7 @@ export function UserDetailsModal({ children, user }: UserDetailsModalProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogOverlay className="fixed inset-0 bg-black/35 backdrop-blur-[1px]" />
-      <DialogContent className="max-w-[560px] rounded-2xl border border-[#D5D5D5] bg-[#F3F3F3] p-7">
+      <DialogContent className="max-w-[560px] rounded-2xl border border-border bg-card p-7">
         <DialogHeader>
           <div className="flex items-start gap-4">
             <Image
@@ -41,44 +41,44 @@ export function UserDetailsModal({ children, user }: UserDetailsModalProps) {
               className="h-12 w-12 rounded-full"
             />
             <div>
-              <h3 className="text-3xl leading-8 font-semibold text-[#2C2C2C]">
+              <h3 className="text-3xl leading-8 font-semibold text-foreground">
                 {user.name}
               </h3>
-              <p className="mt-1 text-xl text-[#A0A0A0]">{user.role}</p>
+              <p className="mt-1 text-xl text-muted-foreground">{user.role}</p>
             </div>
           </div>
           <DialogDescription asChild>
             <div className="mt-6 space-y-4">
-              <div className="grid gap-3 rounded-2xl border border-[#DEDEDE] bg-white p-5 sm:grid-cols-2">
+              <div className="grid gap-3 rounded-2xl border border-border bg-background p-5 sm:grid-cols-2">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[#8D8D8D]">Full Name</p>
-                  <p className="text-base font-semibold text-[#2C2C2C]">
+                  <p className="text-sm font-medium text-muted-foreground">Full Name</p>
+                  <p className="text-base font-semibold text-foreground">
                     {user.name}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[#8D8D8D]">Role</p>
-                  <p className="text-base font-semibold text-[#2C2C2C]">
+                  <p className="text-sm font-medium text-muted-foreground">Role</p>
+                  <p className="text-base font-semibold text-foreground">
                     {user.role}
                   </p>
                 </div>
                 <div className="space-y-1 sm:col-span-2">
-                  <p className="text-sm font-medium text-[#8D8D8D]">
+                  <p className="text-sm font-medium text-muted-foreground">
                     Email Address
                   </p>
-                  <p className="break-all text-base font-semibold text-[#2C2C2C]">
+                  <p className="break-all text-base font-semibold text-foreground">
                     {user.email}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[#8D8D8D]">User ID</p>
-                  <p className="break-all text-base font-semibold text-[#2C2C2C]">
+                  <p className="text-sm font-medium text-muted-foreground">User ID</p>
+                  <p className="break-all text-base font-semibold text-foreground">
                     {user.id}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-[#8D8D8D]">Joined On</p>
-                  <p className="text-base font-semibold text-[#2C2C2C]">
+                  <p className="text-sm font-medium text-muted-foreground">Joined On</p>
+                  <p className="text-base font-semibold text-foreground">
                     {user.joinedAt}
                   </p>
                 </div>

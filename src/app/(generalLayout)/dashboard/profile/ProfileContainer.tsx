@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import avatarImg from "@/assets/avatar.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileHeader from "./ProfileHeader";
 import EditProfileForm from "./EditProfileForm";
@@ -28,7 +29,7 @@ const ProfileContainer = () => {
         <ProfileHeader
           name={profile?.name || ""}
           role={user?.role || "ADMIN"}
-          avatar={profile?.image || "/placeholder.svg?height=120&width=120"}
+          avatar={profile?.image || avatarImg.src}
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

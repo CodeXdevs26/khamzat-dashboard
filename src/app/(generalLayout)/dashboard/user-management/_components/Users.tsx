@@ -9,10 +9,10 @@ import { APagination } from "@/components/ui/APagination";
 import { UserCard } from "./UserCard";
 import { useGetUsersQuery } from "@/redux/api/userApi";
 
-const userRoleOptions = [
+const userStatusOptions = [
   { label: "All", value: "all" },
-  { label: "Admin", value: "ADMIN" },
-  { label: "User", value: "USER" },
+  { label: "Active", value: "ACTIVE" },
+  { label: "Blocked", value: "BLOCKED" },
 ];
 
 type UserListItem = {
@@ -29,7 +29,7 @@ type UserListItem = {
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [userRole, setUserRole] = useState<string>("all");
+  const [userStatus, setUserStatus] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const limit = 10;
   const { data, isLoading, isError, error, refetch } = useGetUsersQuery({
@@ -43,15 +43,17 @@ const Users = () => {
   const totalUsers = data?.data?.meta?.total || 0;
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
-      const matchesRole = userRole === "all" || user.role === userRole;
+      const currentStatus =
+        user.status?.toUpperCase() === "BLOCKED" ? "BLOCKED" : "ACTIVE";
+      const matchesStatus = userStatus === "all" || currentStatus === userStatus;
       const matchesSearch =
         !searchTerm ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.profile?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      return matchesRole && matchesSearch;
+      return matchesStatus && matchesSearch;
     });
-  }, [searchTerm, userRole, users]);
+  }, [searchTerm, userStatus, users]);
 
   return (
     <div>
@@ -64,10 +66,10 @@ const Users = () => {
           onChange={(event) => setSearchTerm(event.target.value)}
         />
         <AFilterSelect
-          onChange={setUserRole}
-          placeholder="user role"
-          value={userRole}
-          options={userRoleOptions}
+          onChange={setUserStatus}
+          placeholder="status"
+          value={userStatus}
+          options={userStatusOptions}
           className="w-[140px]!"
         />
       </div>

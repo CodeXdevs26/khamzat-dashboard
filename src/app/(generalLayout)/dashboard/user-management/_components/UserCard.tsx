@@ -2,6 +2,7 @@ import { AAlertDialog } from "@/components/modal/AAlertDialog";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Lock, LockOpen } from "lucide-react";
 import Image from "next/image";
+import avatarImg from "@/assets/avatar.png";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { UserDetailsModal } from "./UserDetailsModal";
@@ -41,9 +42,7 @@ export function UserCard({ user }: UserCardProps) {
     );
   };
   const displayName = user.profile?.name || "Unknown User";
-  const imageSrc =
-    user.profile?.image ||
-    "https://static.vecteezy.com/system/resources/previews/023/402/465/non_2x/man-avatar-free-vector.jpg";
+  const imageSrc = user.profile?.image || avatarImg.src;
   const roleLabel = user.role?.toLowerCase();
   const joinedAt = new Date(user.createdAt).toLocaleDateString();
   const statusClassName = isBlocked

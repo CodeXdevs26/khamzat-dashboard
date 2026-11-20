@@ -2,9 +2,10 @@ import { baseApi } from "./baseApi";
 
 const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // params: page, limit, read, sortBy, orderBy
     getAllNotifications: builder.query({
       query: (params) => ({
-        url: "/notification",
+        url: "/notifications",
         method: "GET",
         params,
       }),
@@ -12,21 +13,21 @@ const notificationApi = baseApi.injectEndpoints({
     }),
     markAllNotificationsAsRead: builder.mutation({
       query: () => ({
-        url: "/notification",
+        url: "/notifications/read-all",
         method: "PATCH",
       }),
       invalidatesTags: ["notification"],
     }),
     deleteSingleNotification: builder.mutation({
-      query: (id) => ({
-        url: `/notification/${id}`,
+      query: (id: string) => ({
+        url: `/notifications/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["notification"],
     }),
     deleteAllNotifications: builder.mutation({
       query: () => ({
-        url: "/notification/my-notifications",
+        url: "/notifications",
         method: "DELETE",
       }),
       invalidatesTags: ["notification"],

@@ -31,10 +31,6 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-primary-foreground text-center">
-        Edit Your Profile
-      </h3>
-
       <AForm<EditProfileFormValues>
         schema={editProfileSchema}
         defaultValues={defaultValues as EditProfileFormValues | undefined}

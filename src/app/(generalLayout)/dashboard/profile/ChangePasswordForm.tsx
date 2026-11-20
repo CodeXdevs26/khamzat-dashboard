@@ -24,10 +24,6 @@ const ChangePasswordForm = () => {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-primary-foreground text-center">
-        Change Password
-      </h3>
-
       <AForm<ChangePasswordFormValues>
         schema={changePasswordSchema}
         defaultValues={

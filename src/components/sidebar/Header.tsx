@@ -1,9 +1,7 @@
 "use client";
-import Link from "next/link";
 import { SidebarTrigger } from "../ui/sidebar";
-import { Bell } from "lucide-react";
+import NotificationModal from "./NotificationModal";
 import ProfileDropdown from "@/app/(generalLayout)/sections/dashboard/ProfileDropdown";
-import { useGetAllNotificationsQuery } from "@/redux/api/notificationApi";
 import { useEffect } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import { toast } from "sonner";
@@ -16,11 +14,9 @@ type NotificationEvent = {
 };
 
 const Header = () => {
-  const { data } = useGetAllNotificationsQuery("");
   const tokenUser = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
 
-  const unreadNotifications = data?.data?.unreadNotification;
   const socket = useSocket();
   useEffect(() => {
     if (socket) {
@@ -59,15 +55,7 @@ const Header = () => {
       <div className="flex items-center justify-between gap-2 px-4 w-full">
         <SidebarTrigger className="-ml-1 !text-foreground hover:!text-sidebar" />
         <div className="flex items-center gap-3">
-          <Link
-            href={"/dashboard/notifications"}
-            className="bg-secondary p-2 py-[6px] rounded-full flex items-center gap-2"
-          >
-            <Bell size={28} className="ml-1 text-primary" />
-            <p className="bg-primary/10 flex items-center justify-center text-primary rounded-full w-[33px] h-[33px]">
-              {unreadNotifications || 0}
-            </p>
-          </Link>
+          <NotificationModal />
           <ProfileDropdown />
         </div>
       </div>

@@ -1,44 +1,24 @@
+"use client";
+import ASpinner from "@/components/ui/ASpinner";
+import { useGetUsersQuery } from "@/redux/api/userApi";
 import { UserCard } from "../../user-management/_components/UserCard";
 
-const newUsers = [
-  {
-    id: "new-user-1",
-    email: "fortest@mockmail.xyz",
-    role: "USER",
-    createdAt: new Date().toISOString(),
-    profile: { name: "For Test", image: "" },
-  },
-  {
-    id: "new-user-2",
-    email: "iamsohan11@gmail.com",
-    role: "USER",
-    createdAt: new Date().toISOString(),
-    profile: { name: "Mr. Sohan", image: "" },
-  },
-  {
-    id: "new-user-3",
-    email: "sabbirahmedsohan.bd@gmail.com",
-    role: "USER",
-    createdAt: new Date().toISOString(),
-    profile: { name: "John Doe", image: "" },
-  },
-  {
-    id: "new-user-4",
-    email: "junayednoman05@gmail.com",
-    role: "USER",
-    createdAt: new Date().toISOString(),
-    profile: { name: "Noman", image: "" },
-  },
-];
-
 const NewUsers = () => {
+  const { data, isLoading } = useGetUsersQuery({ page: 1, limit: 4 });
+  const users = data?.data?.auths || [];
+
   return (
     <div className="mt-6">
       <h3 className="font-bold text-2xl">New Users</h3>
       <div className="space-y-3 mt-4">
-        {newUsers.map((user) => (
-          <UserCard key={user.id} user={user} />
-        ))}
+        {isLoading ? (
+          <ASpinner size={60} />
+        ) : users.length === 0 ? (
+          <p className="text-muted-foreground">No users yet</p>
+        ) : (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          users.map((user: any) => <UserCard key={user.id} user={user} />)
+        )}
       </div>
     </div>
   );
