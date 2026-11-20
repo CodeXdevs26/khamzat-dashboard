@@ -1,7 +1,6 @@
 import {
   BookOpenText,
   NotebookPen,
-  Bell,
   Layers3,
   Settings,
   UserRoundCog,
@@ -40,11 +39,6 @@ export const navItems: TNavMain = [
     title: "Questions",
     url: "/dashboard/questions",
     icon: <CircleHelp />,
-  },
-  {
-    title: "Notifications",
-    url: "/dashboard/notifications",
-    icon: <Bell />,
   },
   {
     title: "Mascots",

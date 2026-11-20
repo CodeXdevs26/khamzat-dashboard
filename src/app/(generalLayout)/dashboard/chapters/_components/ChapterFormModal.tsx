@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -56,11 +56,14 @@ const ChapterFormModal = ({
 }: ChapterFormModalProps) => {
   const [values, setValues] = useState<ChapterFormValues>(emptyValues);
 
+  // Reset only when the modal opens. The parent passes a new defaultValues
+  // object on every render, so reacting to it would wipe what the user typed.
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (open) {
-      const nextValues = defaultValues ?? emptyValues;
-      setValues(nextValues);
+    if (open && !wasOpen.current) {
+      setValues(defaultValues ?? emptyValues);
     }
+    wasOpen.current = open;
   }, [defaultValues, open]);
 
   const handleFieldChange = (

@@ -59,7 +59,11 @@ const ForgetPasswordForm = () => {
         </p>
       </div>
 
-      <AForm schema={forgetPasswordValidation} onSubmit={onSubmit}>
+      <AForm
+        schema={forgetPasswordValidation}
+        defaultValues={{ email: "" }}
+        onSubmit={onSubmit}
+      >
         <AInput
           placeholder="Enter your email"
           name="email"

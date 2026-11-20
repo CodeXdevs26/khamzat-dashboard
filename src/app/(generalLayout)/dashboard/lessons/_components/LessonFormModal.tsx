@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -80,11 +80,14 @@ const LessonFormModal = ({
     [chaptersData],
   );
 
+  // Reset only when the modal opens. The parent passes a new defaultValues
+  // object on every render, so reacting to it would wipe what the user typed.
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (open) {
-      const nextValues = defaultValues ?? emptyValues;
-      setValues(nextValues);
+    if (open && !wasOpen.current) {
+      setValues(defaultValues ?? emptyValues);
     }
+    wasOpen.current = open;
   }, [defaultValues, open]);
 
   useEffect(() => {

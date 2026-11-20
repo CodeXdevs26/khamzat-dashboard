@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight } from "lucide-react";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
+import avatarImg from "@/assets/avatar.png";
 import Link from "next/link";
 
 type EventCardProps = {
@@ -9,7 +10,7 @@ type EventCardProps = {
   badgeText?: string;
   detailsLabel?: string;
   href?: string;
-  imageUrl?: string;
+  imageUrl?: string | StaticImageData;
 };
 
 export function EventCard({
@@ -18,7 +19,7 @@ export function EventCard({
   badgeText = "Offline",
   detailsLabel = "Details",
   href = "/dashboard/community/rj7348ff3u8ufd44545",
-  imageUrl = "https://payload-marketing.moonpay.com/api/media/file/vibe.jpg",
+  imageUrl = avatarImg,
 }: EventCardProps) {
   return (
     <Link

@@ -17,6 +17,7 @@ import { useLoginMutation } from "@/redux/api/authApi";
 import handleMutation from "@/utils/handleMutation";
 import { useAppDispatch } from "@/redux/hooks/hooks";
 import { setUser } from "@/redux/slice/authSlice";
+import { safeRedirect } from "@/lib/utils";
 
 type LoginFormValues = {
   email: string;
@@ -33,7 +34,7 @@ type DecodedAccessToken = {
 const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get("redirect") || "/dashboard";
+  const redirectUrl = safeRedirect(searchParams.get("redirect"));
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const dispatch = useAppDispatch();
   const [login, { isLoading }] = useLoginMutation();
@@ -92,8 +93,8 @@ const LoginForm = () => {
         <AForm
           schema={loginSchema}
           defaultValues={{
-            email: "lerner.curious@gmail.com",
-            password: "Admin@123",
+            email: "",
+            password: "",
             rememberPassword: true,
           }}
           onSubmit={onSubmit}

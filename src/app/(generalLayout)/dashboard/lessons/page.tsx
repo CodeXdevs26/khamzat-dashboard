@@ -12,8 +12,8 @@ const LessonsPage = () => {
     <main>
       <AContainer>
          <PageTitle
-          title="Users Overview"
-          subTitle="View and manage all user accounts, track active users, and approve or disapprove for a seamless platform experience."
+          title="Lessons Overview"
+          subTitle="Create and manage sentence and dialogue lessons within each chapter."
         />
         <LessonsContainer />
       </AContainer>

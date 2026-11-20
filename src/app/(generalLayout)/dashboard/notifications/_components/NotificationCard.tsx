@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
+import avatarImg from "@/assets/avatar.png";
 import { Button } from "@/components/ui/button";
 
 export function NotificationCard() {
@@ -8,7 +9,7 @@ export function NotificationCard() {
       <div className="flex gap-2">
         {/* Profile Image */}
         <Image
-          src={"https://payload-marketing.moonpay.com/api/media/file/vibe.jpg"}
+          src={avatarImg}
           alt={"Sarah Johnson"}
           width={50}
           height={50}

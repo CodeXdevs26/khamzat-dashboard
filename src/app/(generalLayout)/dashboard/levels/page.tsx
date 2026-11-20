@@ -12,8 +12,8 @@ const LevelsPage = () => {
     <main>
       <AContainer>
         <PageTitle
-          title="Users Overview"
-          subTitle="View and manage all user accounts, track active users, and approve or disapprove for a seamless platform experience."
+          title="Levels Overview"
+          subTitle="Create and manage learning levels, set their order, and upload a cover image for each level."
         />
         <LevelsContainer />
       </AContainer>

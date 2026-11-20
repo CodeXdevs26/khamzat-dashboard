@@ -1,7 +1,7 @@
 "use client";
 
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,10 +118,14 @@ const QuestionFormModal = ({
     | "SENTENCE"
     | undefined;
 
+  // Reset only when the modal opens. The parent passes a new defaultValues
+  // object on every render, so reacting to it would wipe what the user typed.
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (open) {
+    if (open && !wasOpen.current) {
       setValues(defaultValues ?? emptyValues);
     }
+    wasOpen.current = open;
   }, [defaultValues, open]);
 
   useEffect(() => {

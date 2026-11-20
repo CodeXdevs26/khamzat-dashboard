@@ -12,8 +12,8 @@ const ChaptersPage = () => {
     <main>
       <AContainer>
         <PageTitle
-          title="Users Overview"
-          subTitle="View and manage all user accounts, track active users, and approve or disapprove for a seamless platform experience."
+          title="Chapters Overview"
+          subTitle="Create and manage chapters within each level, set their order, and add notes."
         />
         <ChaptersContainer />
       </AContainer>

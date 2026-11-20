@@ -36,8 +36,9 @@ const ProfileDropdown = () => {
   };
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <button className="">
+      {/* asChild: avoid <button> inside <button> (invalid HTML → hydration error) */}
+      <DropdownMenuTrigger asChild>
+        <button type="button" aria-label="Open account menu">
           <Image
             src={profile?.image || avatarImg}
             alt="logo"
@@ -53,12 +54,6 @@ const ProfileDropdown = () => {
         <div className="flex flex-col px-2 gap-3 py-2">
           <Link className="hover:text-foreground" href={"/dashboard/profile"}>
             Profile
-          </Link>
-          <Link
-            className="hover:text-foreground"
-            href={"/dashboard/notifications"}
-          >
-            Notifications
           </Link>
           <Link className="hover:text-foreground" href={"/dashboard/settings"}>
             Settings
