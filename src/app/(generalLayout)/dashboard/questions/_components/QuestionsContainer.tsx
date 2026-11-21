@@ -2,6 +2,7 @@
 
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect, useMemo, useState } from "react";
+import { APagination } from "@/components/ui/APagination";
 import AErrorMessage from "@/components/AErrorMessage";
 import ASpinner from "@/components/ui/ASpinner";
 import { Button } from "@/components/ui/button";
@@ -45,60 +46,40 @@ type LessonApiItem = {
   chapterId: string;
 };
 
+const ALL = "all";
+const PAGE_LIMIT = 10;
+
 const QuestionsContainer = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("");
+  // Level is "all" or a level id. Chapter and lesson are "" (none) or an id.
+  // The backend can only filter questions by lesson, so picking a level
+  // narrows down to one lesson; "All levels" lists every question.
+  const [selectedLevel, setSelectedLevel] = useState(ALL);
   const [selectedChapter, setSelectedChapter] = useState("");
   const [selectedLesson, setSelectedLesson] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<QuestionItem | null>(
     null,
   );
 
-  const { data, isLoading, isError, error, refetch } = useGetQuestionsQuery(
-    undefined,
-  );
   const { data: levelsData } = useGetLevelsQuery(undefined);
   const levels = useMemo<LevelApiItem[]>(() => levelsData?.data || [], [levelsData]);
 
-  useEffect(() => {
-    if (!selectedLevel && levels.length) {
-      setSelectedLevel(levels[0].id);
-    }
-  }, [levels, selectedLevel]);
-
-  const { data: chaptersData, isFetching: isChaptersFetching } =
-    useGetChaptersQuery(selectedLevel);
   const { data: allChaptersData } = useGetChaptersQuery(undefined);
-  const chapters = useMemo<ChapterApiItem[]>(
-    () => chaptersData?.data || [],
-    [chaptersData],
-  );
   const allChapters = useMemo<ChapterApiItem[]>(
     () => allChaptersData?.data || [],
     [allChaptersData],
   );
+  const chapters = useMemo(
+    () =>
+      selectedLevel === ALL
+        ? []
+        : allChapters.filter((chapter) => chapter.levelId === selectedLevel),
+    [allChapters, selectedLevel],
+  );
 
-  useEffect(() => {
-    if (!selectedLevel) return;
-
-    if (!chapters.length) {
-      setSelectedChapter("");
-      setSelectedLesson("");
-      return;
-    }
-
-    const hasSelectedChapter = chapters.some(
-      (chapter) => chapter.id === selectedChapter,
-    );
-
-    if (!hasSelectedChapter) {
-      setSelectedChapter(chapters[0].id);
-      setSelectedLesson("");
-    }
-  }, [chapters, selectedChapter, selectedLevel]);
-
-  const { data: lessonsData, isFetching: isLessonsFetching } = useGetLessonsQuery(
+  const { currentData: lessonsData } = useGetLessonsQuery(
     selectedChapter ? selectedChapter : skipToken,
   );
   const lessons = useMemo<LessonApiItem[]>(
@@ -106,25 +87,41 @@ const QuestionsContainer = () => {
     [lessonsData, selectedChapter],
   );
 
+  // Select the chapter's first lesson once its lessons have loaded.
   useEffect(() => {
-    if (!selectedChapter) {
-      setSelectedLesson("");
-      return;
+    if (!selectedChapter || !lessonsData) return;
+    if (!lessons.some((lesson) => lesson.id === selectedLesson)) {
+      setSelectedLesson(lessons[0]?.id ?? "");
+      setCurrentPage(1);
     }
+  }, [lessons, lessonsData, selectedChapter, selectedLesson]);
 
-    if (!lessons.length) {
-      setSelectedLesson("");
-      return;
+  const questionsArgs =
+    selectedLevel === ALL
+      ? { page: currentPage, limit: PAGE_LIMIT }
+      : selectedLesson
+        ? { page: currentPage, limit: PAGE_LIMIT, lessonId: selectedLesson }
+        : skipToken;
+  const {
+    currentData,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useGetQuestionsQuery(questionsArgs);
+  const totalQuestions: number = currentData?.data?.meta?.total ?? 0;
+
+  // Still working out which lesson to show for the chosen level/chapter.
+  const isResolvingLesson =
+    selectedLevel !== ALL && !!selectedChapter && !lessonsData;
+
+  // Step back a page if the current one became empty (e.g. after a delete).
+  useEffect(() => {
+    if (currentPage > 1 && currentData && totalQuestions > 0) {
+      const lastPage = Math.ceil(totalQuestions / PAGE_LIMIT);
+      if (currentPage > lastPage) setCurrentPage(lastPage);
     }
-
-    const hasSelectedLesson = lessons.some(
-      (lesson) => lesson.id === selectedLesson,
-    );
-
-    if (!hasSelectedLesson) {
-      setSelectedLesson(lessons[0].id);
-    }
-  }, [lessons, selectedChapter, selectedLesson]);
+  }, [currentData, currentPage, totalQuestions]);
 
   const [createQuestion, { isLoading: isCreating }] =
     useCreateQuestionMutation();
@@ -133,8 +130,8 @@ const QuestionsContainer = () => {
   const [deleteQuestion] = useDeleteQuestionMutation();
 
   const questions = useMemo<QuestionItem[]>(
-    () => data?.data?.questions || data?.data || [],
-    [data],
+    () => currentData?.data?.questions || [],
+    [currentData],
   );
 
   const levelOptions = useMemo(
@@ -166,26 +163,40 @@ const QuestionsContainer = () => {
     [lessons],
   );
 
-  const hasNoChaptersForSelectedLevel =
-    !!selectedLevel && !isChaptersFetching && chapters.length === 0;
-  const hasNoLessonsForSelectedChapter =
-    !!selectedChapter && !isLessonsFetching && lessons.length === 0;
-
+  // Level/chapter/lesson filtering happens on the backend (lessonId).
+  // The backend has no search param, so search only covers the current page.
   const filteredQuestions = useMemo(() => {
-    return questions.filter((question) => {
-      const matchesSearch =
-        !searchTerm ||
-        question.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        question.sentenceInEnglish
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        question.fullSentence?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesChapter = !!selectedChapter && question.chapterId === selectedChapter;
-      const matchesLesson = !!selectedLesson && question.lessonId === selectedLesson;
+    const term = searchTerm.toLowerCase();
+    if (!term) return questions;
+    return questions.filter(
+      (question) =>
+        question.type?.toLowerCase().includes(term) ||
+        question.sentenceInEnglish?.toLowerCase().includes(term) ||
+        question.fullSentence?.toLowerCase().includes(term),
+    );
+  }, [questions, searchTerm]);
 
-      return matchesSearch && matchesChapter && matchesLesson;
-    });
-  }, [questions, searchTerm, selectedChapter, selectedLesson]);
+  const handleLevelChange = (value: string) => {
+    setSelectedLevel(value);
+    setSelectedChapter(
+      value === ALL
+        ? ""
+        : (allChapters.find((chapter) => chapter.levelId === value)?.id ?? ""),
+    );
+    setSelectedLesson("");
+    setCurrentPage(1);
+  };
+
+  const handleChapterChange = (value: string) => {
+    setSelectedChapter(value);
+    setSelectedLesson("");
+    setCurrentPage(1);
+  };
+
+  const handleLessonChange = (value: string) => {
+    setSelectedLesson(value);
+    setCurrentPage(1);
+  };
 
   const buildQuestionFormData = (values: QuestionFormValues) => {
     const formData = new FormData();
@@ -255,16 +266,13 @@ const QuestionsContainer = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap xl:flex-nowrap">
             <Select
               value={selectedLevel}
-              onValueChange={(value) => {
-                setSelectedChapter("");
-                setSelectedLesson("");
-                setSelectedLevel(value);
-              }}
+              onValueChange={handleLevelChange}
             >
               <SelectTrigger className="h-12! min-w-30 rounded-xl border-border bg-transparent px-4 text-white">
                 <SelectValue placeholder="Level" />
               </SelectTrigger>
               <SelectContent className="border-border bg-card text-white">
+                <SelectItem value={ALL}>All levels</SelectItem>
                 {levelOptions.map((level: { label: string; value: string }) => (
                   <SelectItem key={level.value} value={level.value}>
                     {level.label}
@@ -275,10 +283,8 @@ const QuestionsContainer = () => {
 
             <Select
               value={selectedChapter}
-              onValueChange={(value) => {
-                setSelectedLesson("");
-                setSelectedChapter(value);
-              }}
+              onValueChange={handleChapterChange}
+              disabled={selectedLevel === ALL}
             >
               <SelectTrigger className="h-12! min-w-35 rounded-xl border-border bg-transparent px-4 text-white">
                 <SelectValue placeholder="Chapter" />
@@ -300,7 +306,8 @@ const QuestionsContainer = () => {
 
             <Select
               value={selectedLesson}
-              onValueChange={setSelectedLesson}
+              onValueChange={handleLessonChange}
+              disabled={!selectedChapter}
             >
               <SelectTrigger className="h-12! min-w-35 rounded-xl border-border bg-transparent px-4 text-white">
                 <SelectValue placeholder="Lesson" />
@@ -329,7 +336,7 @@ const QuestionsContainer = () => {
           </div>
         </div>
 
-        {isLoading || isChaptersFetching || isLessonsFetching ? (
+        {(isFetching && !currentData) || isResolvingLesson ? (
           <ASpinner size={120} className="min-h-[320px]" />
         ) : isError ? (
           <AErrorMessage
@@ -337,9 +344,7 @@ const QuestionsContainer = () => {
             onRetry={refetch}
             className="min-h-[320px]"
           />
-        ) : !hasNoChaptersForSelectedLevel &&
-          !hasNoLessonsForSelectedChapter &&
-          filteredQuestions.length ? (
+        ) : filteredQuestions.length ? (
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             {filteredQuestions.map((question) => (
               <QuestionCard
@@ -362,6 +367,15 @@ const QuestionsContainer = () => {
             </div>
           </div>
         )}
+
+        {totalQuestions > PAGE_LIMIT && (
+          <APagination
+            totalItems={totalQuestions}
+            itemsPerPage={PAGE_LIMIT}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+        )}
       </div>
 
       <QuestionFormModal
@@ -369,9 +383,9 @@ const QuestionsContainer = () => {
         onOpenChange={setIsCreateOpen}
         onSubmit={handleCreateQuestion}
         defaultValues={{
-          levelId: selectedLevel,
-          chapterId: "",
-          lessonId: "",
+          levelId: selectedLevel === ALL ? "" : selectedLevel,
+          chapterId: selectedChapter,
+          lessonId: selectedLesson,
           index: 1,
           sentenceInEnglish: "",
           sentenceInLearningLanguage: "",
@@ -399,7 +413,7 @@ const QuestionsContainer = () => {
                 levelId:
                   allChapters.find(
                     (chapter) => chapter.id === editingQuestion.chapterId,
-                  )?.levelId ?? selectedLevel,
+                  )?.levelId ?? "",
                 chapterId: editingQuestion.chapterId,
                 lessonId: editingQuestion.lessonId,
                 index: editingQuestion.index,

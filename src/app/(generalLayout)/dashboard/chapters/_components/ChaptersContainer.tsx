@@ -1,5 +1,6 @@
 "use client";
 
+import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect, useMemo, useState } from "react";
 import AErrorMessage from "@/components/AErrorMessage";
 import handleMutation from "@/utils/handleMutation";
@@ -62,13 +63,16 @@ const ChaptersContainer = () => {
   const [editingChapter, setEditingChapter] = useState<ChapterApiItem | null>(
     null,
   );
+  // currentData + skipToken: don't flash all chapters before a level is set,
+  // or the previous level's chapters while a new level loads.
   const {
-    data,
-    isLoading,
+    currentData: data,
+    isFetching,
     isError,
     error,
     refetch,
-  } = useGetChaptersQuery(selectedLevel);
+  } = useGetChaptersQuery(selectedLevel ? selectedLevel : skipToken);
+  const isLoading = isFetching && !data;
   const { data: levelsData } = useGetLevelsQuery(undefined);
   const [createChapter, { isLoading: isCreating }] = useCreateChapterMutation();
   const [updateChapter, { isLoading: isUpdating }] = useUpdateChapterMutation();

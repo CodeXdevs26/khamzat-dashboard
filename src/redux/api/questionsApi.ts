@@ -3,6 +3,7 @@ import { baseApi } from "./baseApi";
 type GetQuestionsParams = {
   page: number;
   limit: number;
+  lessonId?: string;
 };
 
 const questionsApi = baseApi.injectEndpoints({

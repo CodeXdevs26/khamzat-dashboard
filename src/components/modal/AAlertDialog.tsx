@@ -38,7 +38,7 @@ export function AAlertDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
       <AlertDialogOverlay className="fixed inset-0 bg-black/30 backdrop-blur-[.8px]" />
-      <AlertDialogContent className="w-[430px] text-center bg-white rounded-lg! py-8 px-10!">
+      <AlertDialogContent className="w-[430px] text-center bg-card border-border rounded-[22px]! py-8 px-10!">
         <AlertDialogHeader>
           <Image
             alt="warning"
@@ -47,15 +47,15 @@ export function AAlertDialog({
             height={90}
             className="mx-auto mb-2"
           />
-          <AlertDialogTitle className="text-center text-2xl text-background">
+          <AlertDialogTitle className="text-center text-2xl text-foreground">
             {title}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-center text-accent-foreground">
+          <AlertDialogDescription className="text-center text-card-foreground">
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="justify-center! gap-3 mt-4">
-          <AlertDialogCancel className="text-card bg-card/20 rounded-md w-1/2 h-11 hover:bg-card/30 shadow-none border-0">
+          <AlertDialogCancel className="text-foreground bg-white/10 rounded-md w-1/2 h-11 hover:bg-white/15 hover:text-foreground shadow-none border-0">
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction

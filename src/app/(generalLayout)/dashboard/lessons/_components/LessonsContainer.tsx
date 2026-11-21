@@ -69,8 +69,9 @@ const LessonsContainer = () => {
       setSelectedLevel(levels[0].id);
     }
   }, [levels, selectedLevel]);
-  const { data: chaptersData, isFetching: isChaptersFetching } =
-    useGetChaptersQuery(selectedLevel);
+  // currentData so a level/chapter switch never shows the previous one's list.
+  const { currentData: chaptersData, isFetching: isChaptersFetching } =
+    useGetChaptersQuery(selectedLevel ? selectedLevel : skipToken);
   const { data: allChaptersData } = useGetChaptersQuery(undefined);
   const chapters = useMemo<ChapterApiItem[]>(
     () => chaptersData?.data || [],
@@ -82,7 +83,7 @@ const LessonsContainer = () => {
   );
 
   useEffect(() => {
-    if (!selectedLevel) return;
+    if (!selectedLevel || !chaptersData) return;
 
     if (!chapters.length) {
       setSelectedChapter("");
@@ -96,9 +97,15 @@ const LessonsContainer = () => {
     if (!hasSelectedChapter) {
       setSelectedChapter(chapters[0].id);
     }
-  }, [chapters, selectedChapter, selectedLevel]);
+  }, [chaptersData, chapters, selectedChapter, selectedLevel]);
 
-  const { data, isLoading, isError, error, refetch } = useGetLessonsQuery(
+  const {
+    currentData: data,
+    isFetching: isLessonsFetching,
+    isError,
+    error,
+    refetch,
+  } = useGetLessonsQuery(
     selectedChapter ? selectedChapter : skipToken,
   );
 
@@ -156,12 +163,12 @@ const LessonsContainer = () => {
         editingLesson?.chapter?.levelId ??
         allChapters.find((chapter) => chapter.id === editingLesson?.chapterId)
           ?.levelId ??
-        selectedLevel,
+        "",
       lessonType: editingLesson?.lessonType ?? "",
       chapterId: editingLesson?.chapterId ?? "",
       index: editingLesson?.index ?? 1,
     }),
-    [allChapters, editingLesson, selectedLevel],
+    [allChapters, editingLesson],
   );
 
   const handleCreateLesson = async (values: LessonFormValues) => {
@@ -270,7 +277,7 @@ const LessonsContainer = () => {
           </div>
         </div>
 
-        {isLoading || isChaptersFetching ? (
+        {(isLessonsFetching && !data) || (isChaptersFetching && !chaptersData) ? (
           <ASpinner size={120} className="min-h-[320px]" />
         ) : isError ? (
           <AErrorMessage

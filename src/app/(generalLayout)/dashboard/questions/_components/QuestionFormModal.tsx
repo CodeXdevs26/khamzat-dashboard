@@ -88,7 +88,9 @@ const QuestionFormModal = ({
 }: QuestionFormModalProps) => {
   const [values, setValues] = useState<QuestionFormValues>(emptyValues);
   const [selectedAudioUrl, setSelectedAudioUrl] = useState<string>();
-  const { data: chaptersData } = useGetChaptersQuery(values.levelId);
+  // currentData (not data): data keeps the previous level's result while the
+  // new one loads, which made the effects below reset the chosen chapter.
+  const { currentData: chaptersData } = useGetChaptersQuery(values.levelId);
   const chapters = useMemo<ChapterApiItem[]>(
     () => chaptersData?.data || [],
     [chaptersData],
@@ -103,7 +105,7 @@ const QuestionFormModal = ({
     [chapters],
   );
 
-  const { data: lessonsData } = useGetLessonsQuery(
+  const { currentData: lessonsData } = useGetLessonsQuery(
     values.chapterId ? values.chapterId : skipToken,
   );
   const chapterLessons = useMemo<LessonApiItem[]>(
@@ -141,25 +143,35 @@ const QuestionFormModal = ({
   }, [values.audio]);
 
   useEffect(() => {
-    if (!values.levelId && levelOptions.length) {
-      setValues((prev) => ({
-        ...prev,
-        levelId: levelOptions[0].value,
-      }));
+    // Don't pick a default level when a chapter is already set (editing),
+    // otherwise the question's chapter would be replaced.
+    // Check prev too: on open this runs in the same commit as the reset above,
+    // so `values` is still the empty state while prev already holds the
+    // question's defaults; overwriting it moved the question to level 1.
+    if (!values.levelId && !values.chapterId && levelOptions.length) {
+      setValues((prev) =>
+        prev.levelId || prev.chapterId
+          ? prev
+          : { ...prev, levelId: levelOptions[0].value },
+      );
     }
-  }, [levelOptions, values.levelId]);
+  }, [levelOptions, values.levelId, values.chapterId]);
 
   useEffect(() => {
-    if (!values.levelId) return;
+    // Wait until chapters for the current level have loaded.
+    if (!values.levelId || !chaptersData) return;
+
+    // Only correct the state this check was based on. If the modal was just
+    // reset to new defaults in the same commit, prev differs: leave it alone.
+    const fixChapter = (chapterId: string) =>
+      setValues((prev) =>
+        prev.levelId !== values.levelId || prev.chapterId !== values.chapterId
+          ? prev
+          : { ...prev, chapterId, lessonId: "" },
+      );
 
     if (!chapterOptions.length) {
-      if (values.chapterId || values.lessonId) {
-        setValues((prev) => ({
-          ...prev,
-          chapterId: "",
-          lessonId: "",
-        }));
-      }
+      if (values.chapterId || values.lessonId) fixChapter("");
       return;
     }
 
@@ -167,14 +179,14 @@ const QuestionFormModal = ({
       (chapter: FormOption) => chapter.value === values.chapterId,
     );
 
-    if (!hasSelectedChapter) {
-      setValues((prev) => ({
-        ...prev,
-        chapterId: chapterOptions[0].value,
-        lessonId: "",
-      }));
-    }
-  }, [chapterOptions, values.chapterId, values.lessonId, values.levelId]);
+    if (!hasSelectedChapter) fixChapter(chapterOptions[0].value);
+  }, [
+    chaptersData,
+    chapterOptions,
+    values.chapterId,
+    values.lessonId,
+    values.levelId,
+  ]);
 
   const filteredLessonOptions = useMemo(() => {
     return chapterLessons
@@ -185,23 +197,24 @@ const QuestionFormModal = ({
   }, [chapterLessons]);
 
   useEffect(() => {
+    // Same guard as the chapter effect: skip if prev was reset meanwhile.
+    const fixLesson = (lessonId: string) =>
+      setValues((prev) =>
+        prev.chapterId !== values.chapterId || prev.lessonId !== values.lessonId
+          ? prev
+          : { ...prev, lessonId },
+      );
+
     if (!values.chapterId) {
-      if (values.lessonId) {
-        setValues((prev) => ({
-          ...prev,
-          lessonId: "",
-        }));
-      }
+      if (values.lessonId) fixLesson("");
       return;
     }
 
+    // Wait until lessons for the current chapter have loaded.
+    if (!lessonsData) return;
+
     if (!filteredLessonOptions.length) {
-      if (values.lessonId) {
-        setValues((prev) => ({
-          ...prev,
-          lessonId: "",
-        }));
-      }
+      if (values.lessonId) fixLesson("");
       return;
     }
 
@@ -209,13 +222,8 @@ const QuestionFormModal = ({
       (lesson: FormOption) => lesson.value === values.lessonId,
     );
 
-    if (!hasSelectedLesson) {
-      setValues((prev) => ({
-        ...prev,
-        lessonId: filteredLessonOptions[0].value,
-      }));
-    }
-  }, [filteredLessonOptions, values.chapterId, values.lessonId]);
+    if (!hasSelectedLesson) fixLesson(filteredLessonOptions[0].value);
+  }, [lessonsData, filteredLessonOptions, values.chapterId, values.lessonId]);
 
   const handleFieldChange = (
     key: keyof QuestionFormValues,

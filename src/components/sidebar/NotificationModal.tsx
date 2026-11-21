@@ -103,7 +103,7 @@ const NotificationModal = () => {
       </DialogTrigger>
 
       <DialogContent
-        className="top-[68px] right-4 left-auto translate-x-0 translate-y-0 sm:max-w-2xl max-h-[calc(100vh-90px)] flex flex-col"
+        className="top-[68px] right-4 left-auto translate-x-0 translate-y-0 sm:max-w-2xl max-h-[calc(100vh-90px)] flex flex-col bg-card border-border"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>

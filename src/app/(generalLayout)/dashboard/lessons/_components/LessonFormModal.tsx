@@ -68,7 +68,9 @@ const LessonFormModal = ({
   lessonTypeOptions,
 }: LessonFormModalProps) => {
   const [values, setValues] = useState<LessonFormValues>(emptyValues);
-  const { data: chaptersData } = useGetChaptersQuery(values.levelId);
+  // currentData (not data): data keeps the previous level's chapters while
+  // the new ones load, which made the effect below reset the chosen chapter.
+  const { currentData: chaptersData } = useGetChaptersQuery(values.levelId);
   const filteredChapterOptions = useMemo<ChapterOption[]>(
     () =>
       (((chaptersData?.data as ChapterApiItem[] | undefined) || []).map(
@@ -91,38 +93,43 @@ const LessonFormModal = ({
   }, [defaultValues, open]);
 
   useEffect(() => {
-    if (!values.levelId && levelOptions.length) {
-      setValues((prev) => ({
-        ...prev,
-        levelId: levelOptions[0].value,
-      }));
+    // Check prev too: on open this runs in the same commit as the reset above,
+    // so `values` is still the old state while prev already holds the
+    // defaults; overwriting them moved the lesson to the first level.
+    if (!values.levelId && !values.chapterId && levelOptions.length) {
+      setValues((prev) =>
+        prev.levelId || prev.chapterId
+          ? prev
+          : { ...prev, levelId: levelOptions[0].value },
+      );
     }
-  }, [levelOptions, values.levelId]);
+  }, [levelOptions, values.levelId, values.chapterId]);
 
   useEffect(() => {
-    if (!values.levelId) return;
+    // Wait until chapters for the current level have loaded.
+    if (!values.levelId || !chaptersData) return;
 
-    if (!filteredChapterOptions.length && values.chapterId) {
-      setValues((prev) => ({
-        ...prev,
-        chapterId: "",
-      }));
+    // Only correct the state this check was based on; skip if prev was reset.
+    const fixChapter = (chapterId: string) =>
+      setValues((prev) =>
+        prev.levelId !== values.levelId || prev.chapterId !== values.chapterId
+          ? prev
+          : { ...prev, chapterId },
+      );
+
+    if (!filteredChapterOptions.length) {
+      if (values.chapterId) fixChapter("");
       return;
     }
 
     if (
-      filteredChapterOptions.length &&
       !filteredChapterOptions.some(
-        (chapter: { label: string; value: string }) =>
-          chapter.value === values.chapterId,
+        (chapter) => chapter.value === values.chapterId,
       )
     ) {
-      setValues((prev) => ({
-        ...prev,
-        chapterId: filteredChapterOptions[0].value,
-      }));
+      fixChapter(filteredChapterOptions[0].value);
     }
-  }, [filteredChapterOptions, values.chapterId, values.levelId]);
+  }, [chaptersData, filteredChapterOptions, values.chapterId, values.levelId]);
 
   const handleFieldChange = (
     key: keyof LessonFormValues,
