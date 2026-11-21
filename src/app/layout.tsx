@@ -12,10 +12,10 @@ const urbanist = Urbanist({
 
 export const metadata: Metadata = {
   title: {
-    default: "Central Player Dashboard",
-    template: "%s | Central Player",
+    default: "Dendalar Dashboard",
+    template: "%s | Dendalar",
   },
-  description: "Central Player Dashboard",
+  description: "Dendalar Dashboard",
 };
 
 export default function RootLayout({

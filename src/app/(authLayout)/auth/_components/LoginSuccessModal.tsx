@@ -33,7 +33,7 @@ const LoginSuccessModal = ({ open }: LoginSuccessModalProps) => {
 
         <Image
           src={logoIcon}
-          alt="Player Central"
+          alt="Dendalar"
           width={150}
           height={150}
           className="relative mx-auto mb-3"
