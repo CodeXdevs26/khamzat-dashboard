@@ -7,9 +7,9 @@
     "npm": ">=10"
   },
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start -p 3010",
+    "dev": "node init && next dev --turbopack",
+    "build": "node init && next build",
+    "start": "node init && next start -p 3010",
     "lint": "next lint",
     "format": "npx prettier --write .",
     "format:check": "npx prettier --check ."
